@@ -39,6 +39,17 @@ def build_variant(language: str) -> tuple[int, int]:
     missing_ua_descriptions = 0
     for offer in offers:
         fields = {child.tag: child for child in list(offer)}
+
+        # Expose the source's 1C product code as the standard YML vendorCode.
+        code1c = fields.get("code1c")
+        vendor_code = fields.get("vendorCode")
+        if code1c is not None:
+            if vendor_code is None:
+                code1c.tag = "vendorCode"
+            else:
+                vendor_code.text = code1c.text
+                offer.remove(code1c)
+
         for main_name, ua_name in (("name", "nameUA"), ("description", "descriptionUA")):
             main = fields.get(main_name)
             ukrainian = fields.get(ua_name)
