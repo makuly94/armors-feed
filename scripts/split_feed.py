@@ -61,6 +61,18 @@ def build_variant(language: str) -> tuple[int, int]:
             if ukrainian is not None:
                 offer.remove(ukrainian)
 
+        # Hide products with a low supplier stock only in the Ukrainian feed.
+        if language == "uk":
+            for stock_name in ("stock", "stock_quantity"):
+                stock = fields.get(stock_name)
+                if stock is not None and stock.text:
+                    try:
+                        if float(stock.text.strip().replace(",", ".")) <= 7:
+                            stock.text = "0"
+                    except ValueError:
+                        # Keep non-numeric stock values unchanged.
+                        pass
+
     PUBLIC_DIR.mkdir(parents=True, exist_ok=True)
     destination = PUBLIC_DIR / f"armors-feed-{language}.xml"
     tree.write(destination, encoding="utf-8", xml_declaration=True)
